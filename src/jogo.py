@@ -1,27 +1,36 @@
 import pygame
-from src.perniloco import Perniloco 
+from perniloco import Perniloco
+
+SCREEN_WIDTH = 800
+SCREEN_HEIGHT = 600
 
 def rodar_jogo():
     pygame.init()
-    #define as configurações iniciais
-    tela = pygame.display.set_mode( (800, 600)) #tamanho da tela a ser mostrado
-    pygame.display.set_caption("Perniloco") #exibe o título
+    tela = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+    imagem_fundo = pygame.image.load("assets/imagens/quarto.png").convert()
+    background = pygame.transform.scale(imagem_fundo, (SCREEN_WIDTH, SCREEN_HEIGHT))
+    pygame.display.set_caption("Perniloco")
     mosquito = Perniloco()
     clock = pygame.time.Clock()
     rodando = True
 
-    while rodando: #loop do jogo
+    while rodando:
         for evento in pygame.event.get():
-            if evento.type == pygame.QUIT: #o jogo sai se a condição se torna falsa
+            if evento.type == pygame.QUIT:
                 rodando = False
-            if evento.type == pygame.KEYDOWN: #se alguma tecla for pressionada
-                if evento.key == pygame.K_SPACE:
-                    mosquito.pular() # se aperta o espaço, o mosquito pula
+            if evento.type == pygame.KEYDOWN:
+                if evento.key == pygame.K_SPACE or evento.key == pygame.K_UP:
+                    mosquito.pular()
+                if evento.key == pygame.K_ESCAPE:
+                    rodando = False
         mosquito.atualizar()
-        tela.fill((0, 0, 0))
+        tela.blit(background, (0, 0))  
         mosquito.desenhar(tela)
         pygame.display.update()
-        clock.tick(60) #faz o programa rodar a 60fps
+        clock.tick(60)
         print(mosquito.y)
 
     pygame.quit()
+
+if __name__ == "__main__":
+    rodar_jogo()
