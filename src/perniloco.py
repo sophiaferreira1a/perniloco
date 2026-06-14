@@ -1,6 +1,5 @@
 import pygame 
 
-#cria a classe do perniloco
 class Perniloco:
     def __init__(self, carregar_sprite=True):
         self.x = 100
@@ -17,7 +16,7 @@ class Perniloco:
             self.sprite = None
             self.rect = pygame.Rect(self.x, self.y, 50, 50)
 
-    def atualizar(self): #faz cair sozinho aos poucos
+    def atualizar(self):
         self.velocidade += self.gravidade
         self.y += self.velocidade
         if self.y > 570:
@@ -25,13 +24,13 @@ class Perniloco:
         if self.y < 0:
             self.y = 0
         self.rect.center = (self.x, self.y)
-    def pular(self): #se chama, o perniloco sobe
+    def pular(self):
         self.velocidade = self.forca_pulo
     
-    def desenhar(self, tela): #desenha o perniloco na tela (rotaciona para cima se estiver movendo pra cima e vice-versa)
+    def desenhar(self, tela):
         if self.sprite is None:
             return
-        self.angulo = -self.velocidade * 3 #ângulo de inclinação
+        self.angulo = -self.velocidade * 3
         if self.angulo > 25:
             self.angulo = 25
         if self.angulo < -90:
