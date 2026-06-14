@@ -1,7 +1,8 @@
 import pygame
 from src.perniloco import Perniloco
 from src.obstaculos import Obstaculo
-from src.config import LARGURA_TELA, ALTURA_TELA, FPS, BRANCO, TROCA_FASE, FIM_JOGO
+from src.config import LARGURA_TELA, ALTURA_TELA, FPS, BRANCO, TROCA_FASE, FIM_JOGO, CAMINHO_RECORDE, CAMINHO_RANKING
+from src.pontuacao import carregar_recorde, atualizar_recorde, carregar_ranking, adicionar_ao_ranking
 
 def rodar_jogo():
     pygame.init()
@@ -20,7 +21,11 @@ def rodar_jogo():
     tempo_invulneravel = 0
     
     pontos = 0
+    recorde = carregar_recorde(CAMINHO_RECORDE)
+    ranking = carregar_ranking(CAMINHO_RANKING)
+    
     fonte = pygame.font.SysFont("Arial", 32, bold=True)
+    fonte_recorde = pygame.font.SysFont("Arial", 24, bold=True)
     fonte_vitoria = pygame.font.SysFont("Arial", 48, bold=True)
     
     pygame.display.set_caption("Perniloco")
@@ -32,6 +37,7 @@ def rodar_jogo():
     rodando = True
     venceu = False
     perdeu = False
+    ranking_atualizado = False
 
     while rodando:
         dt = clock.tick(FPS)
@@ -39,11 +45,21 @@ def rodar_jogo():
             if evento.type == pygame.QUIT:
                 rodando = False
             if evento.type == pygame.KEYDOWN:
-                if evento.key == pygame.K_SPACE or evento.key == pygame.K_UP:
-                    if venceu or perdeu:
-                         rodando = False
+                if (venceu or perdeu) and (evento.key in [pygame.K_SPACE, pygame.K_UP, pygame.K_r]):
+                    vidas = 3
+                    tempo_invulneravel = 0
+                    pontos = 0
+                    recorde = carregar_recorde(CAMINHO_RECORDE)
+                    ranking = carregar_ranking(CAMINHO_RANKING)
+                    background = fundo_quarto
+                    mosquito = Perniloco()
+                    obstaculos = [Obstaculo(LARGURA_TELA + 200)]
+                    venceu = False
+                    perdeu = False
+                    ranking_atualizado = False
+                elif evento.key == pygame.K_SPACE or evento.key == pygame.K_UP:
                     mosquito.pular()
-                if evento.key == pygame.K_ESCAPE:
+                elif evento.key == pygame.K_ESCAPE:
                     rodando = False
         
         if not venceu and not perdeu:
@@ -58,6 +74,8 @@ def rodar_jogo():
                 if not obs.passou and obs.x + obs.largura < mosquito.x:
                     pontos += 1
                     obs.passou = True
+                    
+                    recorde = atualizar_recorde(pontos, recorde, CAMINHO_RECORDE)
                     
                     if pontos == TROCA_FASE:
                         background = fundo_cozinha
@@ -92,7 +110,14 @@ def rodar_jogo():
         texto_pontos = fonte.render(f"Pontos: {pontos}", True, BRANCO)
         tela.blit(texto_pontos, (LARGURA_TELA - texto_pontos.get_width() - 20, 10))
         
+        texto_recorde = fonte_recorde.render(f"Recorde: {recorde}", True, BRANCO)
+        tela.blit(texto_recorde, (LARGURA_TELA - texto_recorde.get_width() - 20, 50))
+        
         if venceu or perdeu:
+            if not ranking_atualizado:
+                ranking = adicionar_ao_ranking(pontos, CAMINHO_RANKING)
+                ranking_atualizado = True
+
             overlay = pygame.Surface((LARGURA_TELA, ALTURA_TELA), pygame.SRCALPHA)
             overlay.fill((0, 0, 0, 150))
             tela.blit(overlay, (0, 0))
@@ -100,9 +125,23 @@ def rodar_jogo():
             texto_principal = "Fim do jogo. Você venceu!" if venceu else "Fim de jogo. Você perdeu :("
             msg_final = fonte_vitoria.render(texto_principal, True, BRANCO)
             msg_score = fonte.render(f"Pontuação Final: {pontos}", True, BRANCO)
+            msg_recorde_final = fonte.render(f"Melhor Pontuação: {recorde}", True, BRANCO)
+            msg_reiniciar = fonte.render("Pressione ESPAÇO ou R para Reiniciar", True, BRANCO)
+            msg_sair = fonte.render("Pressione ESC para Sair", True, BRANCO)
             
-            tela.blit(msg_final, (LARGURA_TELA//2 - msg_final.get_width()//2, ALTURA_TELA//2 - 50))
-            tela.blit(msg_score, (LARGURA_TELA//2 - msg_score.get_width()//2, ALTURA_TELA//2 + 20))
+            tela.blit(msg_final, (LARGURA_TELA//2 - msg_final.get_width()//2, ALTURA_TELA//2 - 180))
+            tela.blit(msg_score, (LARGURA_TELA//2 - msg_score.get_width()//2, ALTURA_TELA//2 - 110))
+            tela.blit(msg_recorde_final, (LARGURA_TELA//2 - msg_recorde_final.get_width()//2, ALTURA_TELA//2 - 60))
+            
+            texto_hist_titulo = fonte_recorde.render("Histórico (Últimos 5 jogos):", True, BRANCO)
+            tela.blit(texto_hist_titulo, (LARGURA_TELA//2 - texto_hist_titulo.get_width()//2, ALTURA_TELA//2 - 10))
+            
+            for i, p in enumerate(ranking):
+                texto_item = fonte_recorde.render(f"{i+1}º: {p} pontos", True, BRANCO)
+                tela.blit(texto_item, (LARGURA_TELA//2 - texto_item.get_width()//2, ALTURA_TELA//2 + 20 + i * 25))
+
+            tela.blit(msg_reiniciar, (LARGURA_TELA//2 - msg_reiniciar.get_width()//2, ALTURA_TELA//2 + 160))
+            tela.blit(msg_sair, (LARGURA_TELA//2 - msg_sair.get_width()//2, ALTURA_TELA//2 + 210))
 
         pygame.display.update()
 
