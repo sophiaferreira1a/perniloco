@@ -1,4 +1,4 @@
-from IntroAlgs_pygame_template.src.pontuacao import calcular_pontos, jogador_perdeu, limitar_valor
+from src.pontuacao import calcular_pontos, jogador_perdeu, limitar_valor
 
 
 def test_calcular_pontos():
